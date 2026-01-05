@@ -9,12 +9,12 @@ from telethon import TelegramClient, events, errors, functions, types
 from telethon.sessions import StringSession
 
 # ================= CONFIG =================
-API_ID = int(os.getenv("API_ID", 35068955))
-API_HASH = os.getenv("API_HASH", "55516255d54a323197d13303d2bcc3da")
+API_ID = int(os.getenv("API_ID", 30973213))
+API_HASH = os.getenv("API_HASH", "4a14f8a15197ed8f7c7cb24704beea51")
 SESSION_STRING = os.getenv("SESSION_STRING")
 
 GROUP_TARGET = -1003621946413
-MY_NAME = "aaronzzw"
+MY_NAME = "Yuri"
 BOT_USERNAME = "FkerKeyRPSBot"
 
 # ================= STATE =================
