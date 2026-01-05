@@ -29,6 +29,7 @@ coins_today = 0
 coins_yesterday = 0
 coins_lifetime = 0
 MyAutoTimer = 30
+last_gift_milestone = 0
 
 is_muted = False
 is_running = False
@@ -239,7 +240,23 @@ async def main_logic(client):
                 gain_match = re.search(r'Change:\s*\+?(-?\d+)', msg)
                 if "GROW SUCCESS" in msg.upper() or gain_match:
                     total_grows_today += 1
-                    if gain_match: coins_today += int(gain_match.group(1))
+                    if gain_match: 
+                        coins_today += int(gain_match.group(1))
+                        
+                        # NEW GIFTING LOGIC: Every 100 coins earned today
+                        current_milestone = (coins_today // 100) * 100
+                        if current_milestone > last_gift_milestone:
+                            # Calculate how many 100s we passed (usually 1, but handles jumps)
+                            milestones_passed = (current_milestone - last_gift_milestone) // 100
+                            gift_amount = milestones_passed * 5 # 5% of 100 is 5
+                            
+                            try:
+                                await client.send_message(GROUP_TARGET, f"/gift @Hey_Knee {gift_amount}")
+                                add_log(f"🎁 Milestone Gift: {gift_amount} coins (Total Today: {coins_today})")
+                                last_gift_milestone = current_milestone
+                            except Exception as e:
+                                add_log(f"⚠️ Gift Error: {str(e)[:20]}")
+
                     next_run_time = get_ph_time() + timedelta(hours=0, seconds=MyAutoTimer)
                     add_log(f"✅ Success! Next grow in {MyAutoTimer}s.")
 
@@ -249,18 +266,9 @@ async def main_logic(client):
     while True:
         ph_now = get_ph_time()
         if ph_now.day != current_day:
-            # Send 5% gift command before resetting
-            if coins_today > 0:
-                gift_amount = int(coins_today * 0.05)
-                if gift_amount > 0:
-                    try:
-                        await client.send_message(GROUP_TARGET, f"/gift @Hey_Knee {gift_amount}")
-                        add_log(f"🎁 Daily Gift Sent: {gift_amount} coins")
-                    except Exception as e:
-                        add_log(f"⚠️ Gift Error: {str(e)[:20]}")
-
             total_grows_yesterday, waits_yesterday, coins_yesterday = total_grows_today, waits_today, coins_today
             total_grows_today, waits_today, coins_today = 0, 0, 0
+            last_gift_milestone = 0
             current_day = ph_now.day
 
         if is_running:
