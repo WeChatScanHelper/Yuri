@@ -201,7 +201,14 @@ async def main_logic(client):
     async def handler(event):
         global last_bot_reply, coins_today, coins_lifetime, total_grows_today, waits_today
         global next_run_time, awaiting_bot_reply, retry_used, grow_sent_at, STATE, no_reply_streak, last_gift_milestone
-
+                  
+                # 2. Specifically kills the "@" badge       
+        try:
+            await client.send_read_acknowledge(event.chat_id, max_id=event.id)
+            await client(functions.messages.ReadMentionsRequest(peer=event.chat_id))
+        except Exception:
+            pass
+        
         sender = await event.get_sender()
         bot_target = BOT_USERNAME.replace("@", "").lower()
         
@@ -209,13 +216,7 @@ async def main_logic(client):
             msg = event.text or ""
             if MY_NAME.lower() in msg.lower().replace("@", ""):
                 # 1. Marks the message as read
-                await client.send_read_acknowledge(event.chat_id, max_id=event.id)
                 
-                # 2. Specifically kills the "@" badge
-                try:
-                    await client(functions.messages.ReadMentionsRequest(peer=event.chat_id))
-                except Exception:
-                    pass
                     
                 last_bot_reply = msg
                 awaiting_bot_reply = False
